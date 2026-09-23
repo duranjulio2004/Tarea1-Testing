@@ -1,0 +1,20 @@
+[cosmic-ray]
+# El módulo objetivo. "." indica que busque en el directorio actual.
+module-path = "."
+
+# Tiempo máximo en segundos que puede tomar un test antes de ser considerado un "timeout"
+# (Útil porque algunos mutantes pueden causar bucles infinitos)
+timeout = 10.0
+
+# Archivos o módulos que no deben ser mutados (ej. los propios tests)
+excluded-modules = ["test_*", "*_test.py", "Resultados/*"]
+
+[cosmic-ray.test-runner]
+# Le indicamos a Cosmic Ray que utilice pytest para correr las pruebas
+name = "pytest"
+# Argumentos adicionales para pytest (opcional, útil para silenciar warnings)
+args = "-q --tb=short"
+
+[cosmic-ray.execution-engine]
+# Define cómo se ejecutan las mutaciones (local es lo estándar para la tarea)
+name = "local"

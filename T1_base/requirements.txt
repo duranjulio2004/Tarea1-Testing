@@ -1,0 +1,16 @@
+# External dependencies required by projects under Python/
+# Generated from import analysis across the folder.
+
+numpy
+scipy
+termcolor
+rlcard
+rapidfuzz
+Levenshtein
+Unidecode
+text-unidecode
+cosmic-ray
+google-genai
+pytest
+coverage
+dotenv

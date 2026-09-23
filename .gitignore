@@ -1,0 +1,19 @@
+# Secrets -- never commit the real API key
+T1_base/.env
+
+# Virtual environment (machine-specific, huge)
+T1_base/.venv/
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+
+# Transient artifacts the agent generates and cleans up per run
+# (kept here in case a run gets interrupted mid-way and leaves one behind)
+**/session.sqlite
+**/.coverage
+**/coverage.json
+
+# Redundant copy of the course's original zip (content already unzipped into T1_base/)
+T1_base.zip
