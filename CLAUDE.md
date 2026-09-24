@@ -26,7 +26,8 @@ given Python file:
    ```
    (fractions 0–1, via `coverage` for the first two and `cosmic-ray` for the
    third.)
-5. **Finish within 2 minutes wall-clock, total, per invocation.** This includes
+5. **Finish within 4 minutes wall-clock, total, per invocation** (course raised it
+   from 2 to 4 on 2026-09-23 due to API load). This includes
    every LLM call, every retry, coverage, and mutation testing — not just
    generation.
 
@@ -283,4 +284,8 @@ than expecting it to finish quickly.
 - Never hand-edit a generated `test_*.py` file — if something's wrong,
   fix the *agent* (prompt or retry logic), rerun, let the model regenerate.
 - The whole `agent.py` invocation (generation + retries + coverage + mutation)
-  must fit in 2 minutes, not just the LLM calls.
+  must fit in 4 minutes, not just the LLM calls.
+- Course rule (2026-09-23): if the run fails because of a 503 "High demand" or
+  504 / time-budget error from the API, `metrics.json` must be exactly
+  `{"error": "High demand"}` and the error must be printed to the console
+  (implemented in `agent.py` via `is_high_demand_error`).

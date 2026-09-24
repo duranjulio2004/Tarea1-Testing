@@ -49,6 +49,22 @@ line coverage, branch coverage, and resistance to mutation testing (cosmic-ray).
    `unittest.TestCase` classes.
 6. Do not add any `sys.path` manipulation, import hacks, or environment
    setup — the import in point 1 is guaranteed to already work.
+7. Test the code's *actual* behavior, not the behavior its names or
+   docstrings suggest. The code may contain bugs (e.g. an operator that
+   raises `TypeError`, an off-by-one). Trace the code by hand before writing
+   each assertion; if a call raises for some input, assert that with
+   `pytest.raises(<ExceptionType>)`, and still reach every other branch
+   with inputs that avoid the failing path. Never write a test that
+   assumes the code is correct when it isn't.
+8. If such a bug makes code *downstream* of it unreachable (e.g. a helper
+   that always raises, so the logic after it never runs), still cover that
+   downstream code: keep one test asserting the bug's real behavior, and in
+   separate tests use pytest's `monkeypatch` to replace *only that one
+   broken helper* with a minimal correct stand-in, so every other line of
+   the real code executes and its results can be asserted precisely.
+   The stand-in must return realistic, non-empty values (what the helper
+   was evidently meant to compute) -- a stub returning `[]`/`None` just
+   skips the downstream code again and defeats the purpose.
 
 ## Output format
 Respond with exactly one fenced Python code block and nothing else — no
@@ -67,7 +83,11 @@ the captured output (stdout + stderr):
 {pytest_output}
 ```
 
-Fix the test file so that it passes. Keep following the same rules as
+Fix the test file so that it passes. If the failure shows the code under
+test behaves differently from what the test expected (including raising an
+exception), the code is the ground truth: change the test's expectation to
+match the actual behavior (use `pytest.raises` for exceptions) instead of
+dropping the test. Keep following the same rules as
 before: flat import from the module filename, a real
 `numpy.random.RandomState(<seed>)` instead of mocks for any `np_random`
 parameter, coverage of both branches of every conditional, and boundary/

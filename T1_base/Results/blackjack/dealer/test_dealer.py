@@ -14,72 +14,82 @@ def rng():
 def test_init_standard_deck():
     deck = init_standard_deck()
     assert len(deck) == 52
-    assert isinstance(deck[0], Card)
-    # Check for uniqueness (simple heuristic)
+    # Verify unique cards (suit * rank = 4 * 13 = 52)
     assert len(set(str(c) for c in deck)) == 52
+    assert isinstance(deck[0], Card)
 
-def test_dealer_initialization_single_deck(rng):
+def test_blackjack_dealer_init_single_deck(rng):
     dealer = BlackjackDealer(rng, num_decks=1)
     assert len(dealer.deck) == 52
     assert dealer.num_decks == 1
     assert dealer.status == 'alive'
     assert dealer.score == 0
 
-def test_dealer_initialization_multi_deck(rng):
+def test_blackjack_dealer_init_infinite_decks(rng):
+    # Tests the 0 branch for infinite decks
+    dealer = BlackjackDealer(rng, num_decks=0)
+    assert len(dealer.deck) == 52
+    assert dealer.num_decks == 0
+
+def test_blackjack_dealer_init_multi_deck(rng):
+    # Tests the multi-deck branch
     num_decks = 2
     dealer = BlackjackDealer(rng, num_decks=num_decks)
     assert len(dealer.deck) == 52 * num_decks
-
-def test_dealer_initialization_infinite_deck(rng):
-    # num_decks=0 triggers infinite/no-pop behavior
-    dealer = BlackjackDealer(rng, num_decks=0)
-    assert len(dealer.deck) == 52
 
 def test_shuffle(rng):
     dealer = BlackjackDealer(rng, num_decks=1)
     original_deck = list(dealer.deck)
     dealer.shuffle()
+    # Check that deck is reordered (statistically highly likely with seed 42)
     assert dealer.deck != original_deck
     assert len(dealer.deck) == 52
 
-def test_deal_card_standard_deck(rng):
+def test_deal_card_finite_deck(rng):
     dealer = BlackjackDealer(rng, num_decks=1)
     player = MockPlayer()
     
-    initial_deck_size = len(dealer.deck)
+    initial_len = len(dealer.deck)
     dealer.deal_card(player)
     
     assert len(player.hand) == 1
-    assert len(dealer.deck) == initial_deck_size - 1
+    assert len(dealer.deck) == initial_len - 1
 
 def test_deal_card_infinite_deck(rng):
-    # Testing num_decks = 0 branch
     dealer = BlackjackDealer(rng, num_decks=0)
     player = MockPlayer()
     
-    initial_deck_size = len(dealer.deck)
+    initial_len = len(dealer.deck)
     dealer.deal_card(player)
     
     assert len(player.hand) == 1
-    assert len(dealer.deck) == initial_deck_size  # Should not pop
+    # For infinite decks (0), the card is not popped
+    assert len(dealer.deck) == initial_len
 
-@pytest.mark.parametrize("num_decks", [1, 2, 0])
-def test_deal_card_boundary_conditions(rng, num_decks):
-    # Verify dealing multiple times works
-    dealer = BlackjackDealer(rng, num_decks=num_decks)
+def test_deal_card_persistence(rng):
+    # Ensure that dealing cards keeps adding to the player's hand
+    dealer = BlackjackDealer(rng, num_decks=1)
     player = MockPlayer()
     
-    for _ in range(5):
-        dealer.deal_card(player)
-        
-    assert len(player.hand) == 5
-    if num_decks != 0:
-        assert len(dealer.deck) == (52 * num_decks) - 5
-    else:
-        assert len(dealer.deck) == 52
+    dealer.deal_card(player)
+    dealer.deal_card(player)
+    
+    assert len(player.hand) == 2
+    assert isinstance(player.hand[0], Card)
+    assert isinstance(player.hand[1], Card)
 
-def test_init_standard_deck_values():
-    deck = init_standard_deck()
-    # Verify specific cards exist
-    assert any(c.rank == 'A' and c.suit == 'S' for c in deck)
-    assert any(c.rank == 'K' and c.suit == 'C' for c in deck)
+def test_dealer_integrity_after_multiple_deals(rng):
+    dealer = BlackjackDealer(rng, num_decks=1)
+    player = MockPlayer()
+    
+    # Exhaust a small deck
+    for _ in range(52):
+        dealer.deal_card(player)
+    
+    assert len(dealer.deck) == 0
+    assert len(player.hand) == 52
+
+def test_invalid_num_decks_logic(rng):
+    # Checking branch coverage for num_decks > 1
+    dealer = BlackjackDealer(rng, num_decks=3)
+    assert len(dealer.deck) == 52 * 3

@@ -17,3 +17,4 @@ T1_base/.venv/
 
 # Redundant copy of the course's original zip (content already unzipped into T1_base/)
 T1_base.zip
+**/pytest-report.xml

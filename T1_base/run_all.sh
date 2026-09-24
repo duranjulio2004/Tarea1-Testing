@@ -4,25 +4,33 @@
 BASE_DIR="Public_Proyects"
 OUTPUT_BASE="Results"
 
-# Definir los proyectos y sus respectivos archivos usando un diccionario (array asociativo)
-declare -A projects
-projects[blackjack]="base.py dealer.py judger.py"
-projects[gin_rummy]="base.py action_event.py dealer.py"
-projects[mahjong]="player.py dealer.py game.py"
-projects[stock4]="tabeformat.py structure.py validate.py"
-projects[svm]="base.py svm.py"
-projects[tree]="base.py tree.py"
-projects[fuzzywuzzy]="fuzz.py string_processing.py StringMatcher.py utils.py"
+# Proyectos y sus archivos, como "proyecto:archivo1 archivo2 ...".
+# (Lista plana en vez de `declare -A`: el bash por defecto de macOS es 3.2 y no
+# soporta arrays asociativos.)
+projects=(
+    "blackjack:base.py dealer.py judger.py"
+    "gin_rummy:base.py action_event.py dealer.py"
+    "mahjong:player.py dealer.py game.py"
+    "stock4:tableformat.py structure.py validate.py"
+    "svm:base.py svm.py"
+    "tree:base.py tree.py"
+    "fuzzywuzzy:fuzz.py string_processing.py StringMatcher.py utils.py"
+)
+
+# Usar el python del venv si existe
+PYTHON="python3"
+[ -x ".venv/bin/python" ] && PYTHON=".venv/bin/python"
 
 echo "=========================================================="
 echo "Iniciando la ejecución del Agente para proyectos públicos"
 echo "=========================================================="
 
 # Iterar sobre cada proyecto
-for project in "${!projects[@]}"; do
+for entry in "${projects[@]}"; do
+    project="${entry%%:*}"
     # Iterar sobre cada archivo del proyecto actual
-    for file in ${projects[$project]}; do
-        
+    for file in ${entry#*:}; do
+
         # Quitar la extensión .py para nombrar la carpeta de salida
         class_name="${file%.py}"
         
@@ -36,7 +44,7 @@ for project in "${!projects[@]}"; do
         mkdir -p "$output_folder"
         
         # Ejecutar el agente con 2 parámetros: filepath y output_folder
-        python3 agent.py "$filepath" "$output_folder"
+        "$PYTHON" agent.py "$filepath" "$output_folder"
         
         # Pausa de 5 segundos para respetar los límites de la API de Gemini (cambiar si es necesario)
         sleep 5
